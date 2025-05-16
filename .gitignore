@@ -1,0 +1,12 @@
+# Build test directory
+__build
+
+# Runtime environment
+runtime
+
+# PyCharm projects
+.idea
+
+# Python Cache
+__pycache__
+*.pyc
