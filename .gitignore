@@ -3,6 +3,7 @@ __build
 
 # Runtime environment
 runtime
+runtime_wsl
 
 # PyCharm projects
 .idea

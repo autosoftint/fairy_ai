@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import cv2
-from lib.hal import CameraImage
+from lib.hal import DeviceCameraImage
 
 
-class Device(CameraImage):
+class Device(DeviceCameraImage):
     def __init__(self):
         super().__init__()
         # Use the default camera.
