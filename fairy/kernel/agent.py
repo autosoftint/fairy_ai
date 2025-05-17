@@ -36,7 +36,13 @@ async def run_server() -> None:
                     await __send_response({"code": 400})
                     continue
                 # Start the agent worker with the text.
-                print(command)
+                if agent_worker is None or agent_worker.returncode is not None:
+                    # Start the worker process.
+                    pass
+                    print(command)
+                else:
+                    await __send_response({"code": 403})
+                    continue
                 # Handle the message.
                 await __send_response({"code": 200})
             else:

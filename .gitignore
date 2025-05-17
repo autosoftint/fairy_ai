@@ -14,3 +14,6 @@ __pycache__
 
 # Configuration File
 fairy/config.py
+
+# History Storage
+fairy/storage

@@ -3,4 +3,5 @@ uvicorn
 opencv-python
 websockets
 aiofiles
-openai
+aiodns
+aiohttp[speedups]
