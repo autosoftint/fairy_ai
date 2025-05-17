@@ -13,4 +13,4 @@ __pycache__
 *.pyc
 
 # Configuration File
-src/config.py
+fairy/config.py
