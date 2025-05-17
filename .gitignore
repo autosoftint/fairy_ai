@@ -11,3 +11,6 @@ runtime_wsl
 # Python Cache
 __pycache__
 *.pyc
+
+# Configuration File
+src/config.py

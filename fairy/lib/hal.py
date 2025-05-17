@@ -2,7 +2,11 @@
 from abc import ABC, abstractmethod
 
 
-class DeviceCameraImage(ABC):
+class DeviceAbstract(ABC):
+    pass
+
+
+class DeviceCameraImage(DeviceAbstract):
     def __init__(self):
         pass
 

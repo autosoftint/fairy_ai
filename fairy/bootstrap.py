@@ -6,12 +6,12 @@ from lib import process
 def main() -> None:
     # Launch the process, should run infinitely.
     proc_frontend: process.Proc = None
-    proc_camera: process.Proc = None
+    proc_sensor: process.Proc = None
     proc_agent: process.Proc = None
     try:
         # Launch the kernel modules.
         proc_frontend = process.launch_subprocess("frontend")
-        proc_camera = process.launch_subprocess("camera")
+        proc_sensor = process.launch_subprocess("sensor")
         proc_agent = process.launch_subprocess("agent")
         # Wait for module exits.
         proc_frontend.communicate()
@@ -22,7 +22,7 @@ def main() -> None:
     finally:
         # Terminate all the subprocess.
         process.terminate(proc_agent)
-        process.terminate(proc_camera)
+        process.terminate(proc_sensor)
         process.terminate(proc_frontend)
 
 
