@@ -67,8 +67,23 @@ async def homepage():
     raise HTTPException(status_code=404)
 
 
+@app.websocket("/send")
+async def send_message_to_client(websocket: WebSocket):
+    # Loop and accept the socket.
+    try:
+        await websocket.accept()
+        while True:
+            # Re-route the request to client socket.
+            request: dict = await websocket.receive_json()
+            # Check whether the client socket exist.
+            if client_socket is not None:
+                await client_socket.send_json(request)
+    except WebSocketDisconnect:
+        pass
+
+
 @app.websocket("/")
-async def message_queue(incoming_socket: WebSocket):
+async def client_message_queue(incoming_socket: WebSocket):
     global client_socket
     # Check whether there is already a client accessing.
     if client_socket is not None:

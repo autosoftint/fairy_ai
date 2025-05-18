@@ -32,18 +32,24 @@ async def start_working() -> None:
     llm_module: ModuleType = importlib.import_module(f"driver.llm.{config.LLM_MODULE}")
     llm: LLM = llm_module.Device()
     # Fetch the LLM result using streaming.
-    is_thinking: bool = False
-    async for chunk in cast(AsyncGenerator, llm.chat_completion(user_prompt=user_prompt)):
-        if chunk is not None:
-            if chunk == "<think>":
-                is_thinking = True
-                print("Thinking...")
-                continue
-            if chunk == "</think>":
-                is_thinking = False
-                continue
-            if not is_thinking:
-                print(chunk, end="")
+    async with connect(f"ws://127.0.0.1:{config.FRONTEND_PORT}/send") as control_ws:
+        async def __send(command: dict) -> None:
+            await control_ws.send(json.dumps(command))
+
+        is_thinking: bool = False
+        async for chunk in cast(AsyncGenerator, llm.chat_completion(user_prompt=user_prompt)):
+            if chunk is not None:
+                if chunk == "<think>":
+                    is_thinking = True
+                    await __send({"op": "think", "state": True})
+                    continue
+                if chunk == "</think>":
+                    is_thinking = False
+                    await __send({"op": "think", "state": False})
+                    continue
+                if not is_thinking:
+                    await __send({"op": "say", "text": chunk})
+        await __send({"op": "done"})
 
 
 def main() -> None:
