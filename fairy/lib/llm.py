@@ -6,5 +6,5 @@ from abc import ABC, abstractmethod
 
 class LLM(ABC):
     @abstractmethod
-    async def chat_completion(self, payload: dict) -> AsyncGenerator:
+    async def chat_completion(self, user_prompt: str) -> AsyncGenerator[str | None]:
         raise NotImplementedError

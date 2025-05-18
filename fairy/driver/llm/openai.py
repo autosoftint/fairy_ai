@@ -17,7 +17,7 @@ class Device(LLM):
             "stream": True
         }
 
-    async def chat_completion(self, user_prompt: str) -> AsyncGenerator:
+    async def chat_completion(self, user_prompt: str) -> AsyncGenerator[str | None]:
         # Construct the payload.
         payload: dict = self.__payload_base.copy()
         payload["messages"].append({

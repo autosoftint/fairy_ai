@@ -3,7 +3,10 @@
 import json
 import asyncio
 import importlib
+from typing import cast, AsyncGenerator
+from types import ModuleType
 from websockets.asyncio.client import connect
+from lib.llm import LLM
 import config
 
 
@@ -21,12 +24,26 @@ async def start_working() -> None:
     # Check out the working mode.
     request_mode: str = request['mode']
     if request_mode == "text":
-        user_token: str = request['text']
+        user_prompt: str = request['text']
     else:
         print(f"unknown request mode {request_mode}")
         return
     # Construct the LLM communicator.
-    # importlib.import_module(f"driver.llm.{config.LLM_MODULE}")
+    llm_module: ModuleType = importlib.import_module(f"driver.llm.{config.LLM_MODULE}")
+    llm: LLM = llm_module.Device()
+    # Fetch the LLM result using streaming.
+    is_thinking: bool = False
+    async for chunk in cast(AsyncGenerator, llm.chat_completion(user_prompt=user_prompt)):
+        if chunk is not None:
+            if chunk == "<think>":
+                is_thinking = True
+                print("Thinking...")
+                continue
+            if chunk == "</think>":
+                is_thinking = False
+                continue
+            if not is_thinking:
+                print(chunk, end="")
 
 
 def main() -> None:
