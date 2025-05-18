@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# cython: language_level=3
 import wave
 import pyaudio
 from lib.hal import DeviceMicrophone
@@ -26,4 +27,3 @@ class Device(DeviceMicrophone):
             )
         except Exception as e:
             print(f"Error happens when initializing microphone: {e}")
-

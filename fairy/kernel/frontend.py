@@ -6,7 +6,8 @@ import uvicorn
 import aiofiles
 from typing import Optional
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi.websockets import WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from websockets.asyncio.client import connect
@@ -23,6 +24,8 @@ path_homepage: str = os.path.join(path.PATH_WEB, "index.html")
 # Prepare the homepage cache.
 homepage_modified: float | None = None
 homepage_cache: str = ""
+# Prepare the client message queue.
+client_socket: WebSocket | None = None
 
 
 class ChatContent(BaseModel):
@@ -64,9 +67,34 @@ async def homepage():
     raise HTTPException(status_code=404)
 
 
+@app.websocket("/")
+async def message_queue(incoming_socket: WebSocket):
+    global client_socket
+    # Check whether there is already a client accessing.
+    if client_socket is not None:
+        # Already got one connecting.
+        return
+    # Accept the client socket.
+    try:
+        # Save the incoming socket as the global socket.
+        client_socket = incoming_socket
+        await client_socket.accept()
+        # Keep the connection, ignoring all the incoming message.
+        while True:
+            await client_socket.receive()
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        print(f"Error happens during message queue: {e}")
+    finally:
+        # Reset the client socket.
+        client_socket = None
+
+
 def main() -> None:
     print("starting frontend server...", flush=True)
     uvicorn.run(app, host="127.0.0.1", port=config.FRONTEND_PORT,
+                ws_ping_timeout=3600,
                 log_level=config.FRONTEND_LOG)
 
 
