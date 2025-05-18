@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# cython: language_level=3
 from abc import ABC, abstractmethod
 
 
@@ -21,3 +22,8 @@ class DeviceCameraImage(DeviceAbstract):
     @abstractmethod
     def read_buffer(self):
         raise NotImplementedError
+
+
+class DeviceMicrophone(DeviceAbstract):
+    def __init__(self):
+        pass

@@ -4,18 +4,24 @@ import json
 import asyncio
 import websockets
 from websockets.asyncio.server import serve, ServerConnection
-from lib import process
+from lib import process, history
 import config
+
+# Prepare an agent worker thread.
+agent_worker: process.Proc = None
 
 
 async def run_server() -> None:
-    # Launch the queue.
-    print("starting agent manager...", flush=True)
+    global agent_worker
 
-    agent_worker: process.Proc = None
+    print("starting agent manager...", flush=True)
+    # Load the LLM history from disk.
+    records: dict = await history.load_records()
 
     async def __handler(websocket: ServerConnection) -> None:
-        async def __send_response(content: dict) -> None:
+        global agent_worker
+
+        async def __reply(content: dict) -> None:
             await websocket.send(json.dumps(content))
 
         # Accept the connection.
@@ -24,29 +30,30 @@ async def run_server() -> None:
             try:
                 command: dict = json.loads(message)
             except json.decoder.JSONDecodeError:
-                await __send_response({"code": 400})
+                await __reply({"code": 400})
                 continue
             # Check out the command.
             if "op" not in command:
-                await __send_response({"code": 400})
+                await __reply({"code": 400})
                 continue
             op: str = command["op"]
-            if op == "start_text":
-                if "text" not in command:
-                    await __send_response({"code": 400})
-                    continue
+            if op == "start":
                 # Start the agent worker with the text.
-                if agent_worker is None or agent_worker.returncode is not None:
+                if agent_worker is None or agent_worker.poll() is not None:
+                    # Save the current command to record.
+                    records["request"] = command
                     # Start the worker process.
-                    pass
-                    print(command)
+                    agent_worker = process.launch_subprocess("agent_worker")
                 else:
-                    await __send_response({"code": 403})
+                    await __reply({"code": 403})
                     continue
                 # Handle the message.
-                await __send_response({"code": 200})
+                await __reply({"code": 200})
+            elif op == "fetch":
+                # Give back the current stored records.
+                await __reply({"code": 200, "records": records})
             else:
-                await __send_response({"code": 404})
+                await __reply({"code": 404})
 
     # Loop forever to serve the command sent from html.
     try:

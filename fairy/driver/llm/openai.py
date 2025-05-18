@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+# cython: language_level=3
+import json
+import aiohttp
+import config
+from typing import AsyncGenerator
+from lib.llm import LLM
+
+
+class Device(LLM):
+    def __init__(self):
+        self.__payload_base: dict = {
+            "model": config.LLM_MODEL,
+            "messages": [
+                {"role": "system", "content": config.LLM_SYSTEM_PROMPT},
+            ],
+            "stream": True
+        }
+
+    async def chat_completion(self, user_prompt: str) -> AsyncGenerator:
+        # Construct the payload.
+        payload: dict = self.__payload_base.copy()
+        payload["messages"].append({
+            "role": "user",
+            "content": user_prompt
+        })
+        # Send the payload to LLM.
+        async with aiohttp.ClientSession() as sess:
+            headers: dict[str, str] = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {config.LLM_API_KEY}"
+            }
+            async with sess.post(f'{config.LLM_BASE_URL}/chat/completions',
+                                 headers=headers,
+                                 data=json.dumps(payload)) as response:
+                async for data in response.content:
+                    if not data.startswith(b"data: "):
+                        continue
+                    data = data[6:]
+                    if data.startswith(b"[DONE]"):
+                        continue
+                    choices = json.loads(data)['choices'][0]
+                    if choices['finish_reason'] is None:
+                        yield choices['delta']['content']
+                    else:
+                        yield None
