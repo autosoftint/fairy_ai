@@ -8,6 +8,20 @@ const HEARTBEAT_INTERVAL = 30000 // 30 second a heartbeat
 let message_socket = null
 let message_heartbeat = null
 
+
+document.getElementById("user_stop").onclick = function (e) {
+    fetch(window.location.protocol + "//" + window.location.host + "/stop", {
+        method: 'POST'
+    }).then(response => response.json())
+        .then(function (response) {
+            unlockUserInput()
+        })
+        .catch(function (error) {
+            console.log(error)
+            unlockUserInput()
+        })
+}
+
 function lockUserInput() {
     elementUserInput.disabled = true
     elementUserSayText.disabled = true

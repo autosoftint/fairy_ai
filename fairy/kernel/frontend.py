@@ -4,6 +4,7 @@ import json
 import os
 import uvicorn
 import aiofiles
+import traceback
 from typing import Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, WebSocket, HTTPException
@@ -49,6 +50,20 @@ async def start_chat(request: ChatContent):
     except Exception as e:
         print(f"Error happens during start chat: {e}")
         return JSONResponse({"code": 503})
+
+
+@app.post("/stop")
+async def stop():
+    try:
+        # Send request to agent.
+        async with connect(f"ws://127.0.0.1:{config.AGENT_PORT}") as ws:
+            # Send the command to socket.
+            await ws.send(json.dumps({"op": "stop"}))
+            # Read the replied json value.
+            return JSONResponse(json.loads(await ws.recv()))
+    except Exception as e:
+        print(f"Error happens during start chat: {e}")
+        return JSONResponse({"code": 500})
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -100,7 +115,7 @@ async def client_message_queue(incoming_socket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        print(f"Error happens during message queue: {e}")
+        print(f"Error happens during message queue:\n{traceback.format_exc()}")
     finally:
         # Reset the client socket.
         client_socket = None

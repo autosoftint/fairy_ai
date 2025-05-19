@@ -24,6 +24,9 @@ async def run_server() -> None:
         async def __reply(content: dict) -> None:
             await websocket.send(json.dumps(content))
 
+        def __is_worker_free() -> bool:
+            return agent_worker is None or agent_worker.poll() is not None
+
         # Accept the connection.
         async for message in websocket:
             # Parse the message.
@@ -39,7 +42,7 @@ async def run_server() -> None:
             op: str = command["op"]
             if op == "start":
                 # Start the agent worker with the text.
-                if agent_worker is None or agent_worker.poll() is not None:
+                if __is_worker_free():
                     # Save the current command to record.
                     records["request"] = command
                     # Start the worker process.
@@ -52,6 +55,12 @@ async def run_server() -> None:
             elif op == "fetch":
                 # Give back the current stored records.
                 await __reply({"code": 200, "records": records})
+            elif op == "stop":
+                # Check whether the agent worker is running.
+                if not __is_worker_free():
+                    # Kill the worker.
+                    process.terminate(agent_worker)
+                await __reply({"code": 200})
             else:
                 await __reply({"code": 404})
 
