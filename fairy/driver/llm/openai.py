@@ -45,6 +45,9 @@ class Device(LLM):
                         if choices['finish_reason'] is None:
                             yield choices['delta']['content']
                         else:
-                            yield None
+                            if 'delta' in choices and 'content' in choices['delta']:
+                                yield choices['delta']['content']
+                            else:
+                                yield None
             except ClientConnectorError:
                 yield None

@@ -41,6 +41,7 @@ elementUserSayText.onclick = function () {
     lockUserInput()
     elementUserInput.value = ""
     elementUserText.innerText = userInput
+    elementResult.innerText = ""
     // Construct the text payload.
     fetch(window.location.protocol + "//" + window.location.host + "/chat", {
         method: 'POST',
