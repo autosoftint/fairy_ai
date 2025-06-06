@@ -17,3 +17,7 @@ fairy/config.py
 
 # History Storage
 fairy/storage
+
+# Web asserts
+fairy/web/static/assert
+fairy/web/static/model

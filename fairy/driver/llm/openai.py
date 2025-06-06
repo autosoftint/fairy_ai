@@ -5,26 +5,24 @@ import aiohttp
 import config
 from typing import AsyncGenerator
 from aiohttp import ClientConnectorError
-from lib.llm import LLM
+from lib.llm import LLM, system_prompt
 
 
 class Device(LLM):
     def __init__(self):
         self.__payload_base: dict = {
             "model": config.LLM_MODEL,
-            "messages": [
-                {"role": "system", "content": config.LLM_SYSTEM_PROMPT},
-            ],
+            "messages": [],
             "stream": True
         }
 
     async def chat_completion(self, user_prompt: str) -> AsyncGenerator[str | None]:
         # Construct the payload.
         payload: dict = self.__payload_base.copy()
-        payload["messages"].append({
-            "role": "user",
-            "content": user_prompt
-        })
+        payload["messages"] = [
+            {"role": "system", "content": system_prompt()},
+            {"role": "user", "content": user_prompt}
+        ]
         # Send the payload to LLM.
         async with aiohttp.ClientSession() as sess:
             headers: dict[str, str] = {

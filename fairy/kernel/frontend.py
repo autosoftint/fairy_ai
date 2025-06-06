@@ -34,6 +34,12 @@ class ChatContent(BaseModel):
     text: Optional[str] = None
 
 
+@app.get("/ui_settings", response_class=JSONResponse)
+async def fetch_ui_settings():
+    return JSONResponse({"code": 200,
+                         "result": config.UI_SETTINGS})
+
+
 @app.post("/chat", response_class=JSONResponse)
 async def start_chat(request: ChatContent):
     try:
@@ -88,9 +94,9 @@ async def send_message_to_client(websocket: WebSocket):
     try:
         await websocket.accept()
         while True:
-            # Re-route the request to client socket.
+            # Re-route the request to the web client.
             request: dict = await websocket.receive_json()
-            # Check whether the client socket exist.
+            # Check whether the client socket exists.
             if client_socket is not None:
                 await client_socket.send_json(request)
     except WebSocketDisconnect:
@@ -110,11 +116,14 @@ async def client_message_queue(incoming_socket: WebSocket):
         client_socket = incoming_socket
         await client_socket.accept()
         # Keep the connection, ignoring all the incoming message.
-        while True:
-            await client_socket.receive()
+        client_not_closed: bool = True
+        while client_not_closed:
+            client_message: dict = dict(await client_socket.receive())
+            # Update the client closed message
+            client_not_closed = client_message["type"] != "websocket.disconnect"
     except WebSocketDisconnect:
         pass
-    except Exception as e:
+    except Exception:
         print(f"Error happens during message queue:\n{traceback.format_exc()}")
     finally:
         # Reset the client socket.
@@ -122,7 +131,7 @@ async def client_message_queue(incoming_socket: WebSocket):
 
 
 def main() -> None:
-    print("starting frontend server...", flush=True)
+    print(f"starting frontend server at http://127.0.0.1:{config.FRONTEND_PORT}/", flush=True)
     uvicorn.run(app, host="127.0.0.1", port=config.FRONTEND_PORT,
                 ws_ping_timeout=3600,
                 log_level=config.FRONTEND_LOG)

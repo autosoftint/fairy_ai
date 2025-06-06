@@ -6,3 +6,5 @@ pyaudio
 aiofiles
 aiodns
 aiohttp[speedups]
+
+kokoro-onnx

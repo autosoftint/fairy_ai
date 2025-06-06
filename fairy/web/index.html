@@ -3,20 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <title>Fairy - Type III General-Purpose AI</title>
+
+    <!-- CSS -->
+    <link href="/static/css/fairy.css" rel="preload" crossorigin="anonymous" as="style">
+    <link href="/static/css/fairy.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
-    <textarea id="user_input"></textarea>
-    <button id="user_say_text">Submit</button>
-    <button id="user_stop">Stop</button>
-    <div id="user_message"></div>
-    <div id="thinking_state"></div>
-    <div id="result_message"></div>
 
-    <canvas id="canvas" width="800" height="800"></canvas>
-
-    <script src="/static/main.js"></script>
-    <script>
-        entry();
+<div id="app">
+    <canvas id="live2d"></canvas>
+    <div id="ui_dialogue">
+        <div id="ui_user_textbox" class="ui-panel">
+            <label for="ui_user_text_input"></label>
+            <div id="ui_user_message" hidden></div>
+            <textarea id="ui_user_text_input" placeholder="你要对爱莉希雅说什么？" class="ui-text"></textarea>
+            <div class="ui-button-area">
+                <button id="ui_user_say_text">发送</button>
+            </div>
+        </div>
+        <div id="ui_fairy_textbox" class="ui-panel" hidden>
+            <div id="ui_fairy_text_result" class="ui-text"></div>
+            <div class="ui-button-area">
+                <button id="ui_user_stop">停止</button>
+                <button id="ui_user_restart">继续发言</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="scripts">
+    <!-- Live2D Cubism SDK v2 and v4 -->
+    <script type="text/javascript" src="/static/js/live2d.min.js"></script>
+    <script type="text/javascript" src="/static/js/live2dcubismcore.min.js"></script>
+    <!-- Pixi.JS v6 -->
+    <script type="text/javascript" src="/static/js/pixi.min.js"></script>
+    <!-- Pixi.JS Live2D Display Plugin -->
+    <script type="text/javascript" src="/static/js/pixi-live2d-display.min.js"></script>
+    <!-- Fairy Kernel, Backend & UI -->
+    <script type="text/javascript" src="/static/js/utils.js"></script>
+    <script type="text/javascript" src="/static/js/ui.js"></script>
+    <script type="text/javascript" src="/static/js/backend.js"></script>
+    <script type="text/javascript" src="/static/js/kernel.js"></script>
+    <script type="text/javascript">
+        // Hide the script tags, shorten the code displayed in F12 elements.
+        let script_pack = document.getElementById('scripts');
+        script_pack.remove();
+        // Start up Fairy.
+        bootstrap();
     </script>
+</div>
 </body>
 </html>

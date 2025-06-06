@@ -3,7 +3,7 @@ from lib import process
 
 
 def main() -> None:
-    # Launch the process, should run infinitely.
+    # Launch the processes, should run infinitely.
     proc_frontend: process.Proc = None
     proc_sensor: process.Proc = None
     proc_agent: process.Proc = None
