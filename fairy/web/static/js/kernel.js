@@ -1,5 +1,13 @@
+function static_url(suffix) {
+    return "/static" + suffix
+}
+
 function js_url(js_name) {
-    return "/static/js/" + js_name + ".js"
+    return static_url("/js/" + js_name + ".js")
+}
+
+function model_url(module_suffix) {
+    return static_url("/model/" + module_suffix)
 }
 
 async function loadScript(src) {
@@ -12,9 +20,22 @@ async function loadScript(src) {
     });
 }
 
+async function loadHtml(src) {
+    fetch(src)
+        .then(response => response.text())
+        .then(html_source => {
+            appDiv.insertAdjacentHTML('afterbegin', html_source);
+        })
+}
+
 async function loadUiModule(ui_settings) {
     const details = ui_settings['result'];
     const ui_type = details['type'];
+
+    if ("placeholder" in details) {
+        elementUserTextArea.placeholder = details['placeholder'];
+    }
+
     if (ui_type === 'live2d') {
         const module_names = [
             // Live2D Cubism SDK v2 and v4
@@ -30,8 +51,15 @@ async function loadUiModule(ui_settings) {
         for (const js_name of module_names) {
             await loadScript(js_url(js_name));
         }
+        // Create the Live2D canvas.
+        const canvas = document.createElement("canvas");
+        canvas.id = "live2d";
+        appDiv.insertBefore(canvas, appDiv.firstChild);
         // Load Live2D avatar model.
         (loadLive2D)(details["background"], details["model_url"]);
+    } else if (ui_type === 'html') {
+        // Load HTML source code.
+        await loadHtml(model_url(details["url"]))
     }
 }
 
@@ -43,7 +71,8 @@ function bootstrap() {
         .then(response => {
             // Connect to server command queue.
             connect_message_socket();
-            // Based on the response, load the Live2D.
+            // Based on the response, load the UI module.
             (loadUiModule)(response);
+            // Based on the response, load the dialogue.
         })
 }

@@ -3,7 +3,7 @@
 import wave
 import pyaudio
 from lib.hal import DeviceMicrophone
-import config
+from config import driver as driver_config
 
 
 class Device(DeviceMicrophone):
@@ -12,7 +12,7 @@ class Device(DeviceMicrophone):
         # Calculate the silence chunks.
         rate: int = 16000
         frames_per_buffer: int = 1024
-        silence_chunks: int = int(config.MICROPHONE_SILENCE_SEC * rate / frames_per_buffer)
+        silence_chunks: int = int(driver_config.MICROPHONE_SILENCE_SEC * rate / frames_per_buffer)
         # Initial the device.
         self.__audio: pyaudio.PyAudio = pyaudio.PyAudio()
         self.__stream: pyaudio.Stream | None = None

@@ -23,6 +23,9 @@ function updateSpriteSize() {
     avatarModel.scale.set(scaleFactor);
     // Move the model to the central of the window.
     avatarModel.x = (appRect.width - avatarModel.width) / 2;
+
+    // Stare at the front.
+    // avatarModel.focus(avatarModel.width / 2, 0)
 }
 
 let avatarModel = null;
@@ -46,7 +49,8 @@ async function loadLive2D(background_url, model_url) {
     // Add the Live2D model to stage.
     const modelUrl = "/static/model/" + model_url;
     avatarModel = await PIXI.live2d.Live2DModel.from(modelUrl, {
-        autoInteract: false
+        autoInteract: false,
+        motionPreload: PIXI.live2d.MotionPreloadStrategy.ALL,
     });
     app.stage.addChild(avatarModel);
 

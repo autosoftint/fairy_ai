@@ -12,8 +12,8 @@ runtime_wsl
 __pycache__
 *.pyc
 
-# Configuration File
-fairy/config.py
+# Configuration Files
+fairy/config/*.py
 
 # History Storage
 fairy/storage

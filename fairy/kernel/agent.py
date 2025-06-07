@@ -5,7 +5,7 @@ import asyncio
 import websockets
 from websockets.asyncio.server import serve, ServerConnection
 from lib import process, history
-import config
+from config import driver as config_driver
 
 # Prepare an agent worker thread.
 agent_worker: process.Proc = None
@@ -64,11 +64,11 @@ async def run_server() -> None:
             else:
                 await __reply({"code": 404})
 
-    # Loop forever to serve the command sent from html.
+    # Loop forever to serve the command sent from HTML.
     try:
         while True:
             try:
-                async with serve(__handler, "127.0.0.1", config.AGENT_PORT):
+                async with serve(__handler, "127.0.0.1", config_driver.AGENT_PORT):
                     await asyncio.get_event_loop().create_future()
             except (ConnectionError, OSError, asyncio.CancelledError, websockets.exceptions.WebSocketException):
                 pass

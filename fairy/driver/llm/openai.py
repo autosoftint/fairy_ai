@@ -2,16 +2,16 @@
 # cython: language_level=3
 import json
 import aiohttp
-import config
 from typing import AsyncGenerator
 from aiohttp import ClientConnectorError
 from lib.llm import LLM, system_prompt
+from config import driver as driver_config
 
 
 class Device(LLM):
     def __init__(self):
         self.__payload_base: dict = {
-            "model": config.LLM_MODEL,
+            "model": driver_config.LLM_MODEL,
             "messages": [],
             "stream": True
         }
@@ -27,10 +27,10 @@ class Device(LLM):
         async with aiohttp.ClientSession() as sess:
             headers: dict[str, str] = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {config.LLM_API_KEY}"
+                "Authorization": f"Bearer {driver_config.LLM_API_KEY}"
             }
             try:
-                async with sess.post(f'{config.LLM_BASE_URL}/chat/completions',
+                async with sess.post(f'{driver_config.LLM_BASE_URL}/chat/completions',
                                      headers=headers,
                                      data=json.dumps(payload)) as response:
                     async for data in response.content:

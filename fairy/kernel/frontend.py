@@ -14,7 +14,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from websockets.asyncio.client import connect
 from lib.version import VERSION
 from lib import path
-import config
+from config import driver as driver_config, agent as agent_config
 
 app = FastAPI(title="Fairy Localhost Server",
               version=VERSION,)
@@ -37,21 +37,21 @@ class ChatContent(BaseModel):
 @app.get("/ui_settings", response_class=JSONResponse)
 async def fetch_ui_settings():
     return JSONResponse({"code": 200,
-                         "result": config.UI_SETTINGS})
+                         "result": agent_config.UI_SETTINGS})
 
 
 @app.post("/chat", response_class=JSONResponse)
 async def start_chat(request: ChatContent):
     try:
         # Send request to agent.
-        async with connect(f"ws://127.0.0.1:{config.AGENT_PORT}") as ws:
+        async with connect(f"ws://127.0.0.1:{driver_config.AGENT_PORT}") as ws:
             # Construct the payload command.
             payload: dict = {"op": "start", "mode": request.mode}
             if request.mode == "text":
                 payload["text"] = request.text
-            # Send the payload to socket.
+            # Send the user payload to the worker agent socket.
             await ws.send(json.dumps(payload))
-            # Read the replied json value.
+            # Read the replied JSON value.
             return JSONResponse(json.loads(await ws.recv()))
     except Exception as e:
         print(f"Error happens during start chat: {e}")
@@ -62,10 +62,10 @@ async def start_chat(request: ChatContent):
 async def stop():
     try:
         # Send request to agent.
-        async with connect(f"ws://127.0.0.1:{config.AGENT_PORT}") as ws:
+        async with connect(f"ws://127.0.0.1:{driver_config.AGENT_PORT}") as ws:
             # Send the command to socket.
             await ws.send(json.dumps({"op": "stop"}))
-            # Read the replied json value.
+            # Read the replied JSON value, send back to frontend.
             return JSONResponse(json.loads(await ws.recv()))
     except Exception as e:
         print(f"Error happens during start chat: {e}")
@@ -74,7 +74,7 @@ async def stop():
 
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
-    # This serve the index.html for the root path, check file existence.
+    # This serves the index.html for the root path, check file existence.
     if os.path.isfile(path_homepage):
         global homepage_cache
         # Check whether the homepage is loaded.
@@ -131,10 +131,10 @@ async def client_message_queue(incoming_socket: WebSocket):
 
 
 def main() -> None:
-    print(f"starting frontend server at http://127.0.0.1:{config.FRONTEND_PORT}/", flush=True)
-    uvicorn.run(app, host="127.0.0.1", port=config.FRONTEND_PORT,
+    print(f"starting frontend server at http://127.0.0.1:{driver_config.FRONTEND_PORT}/", flush=True)
+    uvicorn.run(app, host="127.0.0.1", port=driver_config.FRONTEND_PORT,
                 ws_ping_timeout=3600,
-                log_level=config.FRONTEND_LOG)
+                log_level=driver_config.FRONTEND_LOG)
 
 
 if __name__ == "__main__":

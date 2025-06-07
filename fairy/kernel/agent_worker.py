@@ -7,12 +7,12 @@ from typing import cast, AsyncGenerator
 from types import ModuleType
 from websockets.asyncio.client import connect
 from lib.llm import LLM
-import config
+from config import driver as driver_config
 
 
 async def start_working() -> None:
     # Check the source is text or from STT.
-    async with connect(f"ws://127.0.0.1:{config.AGENT_PORT}") as ws:
+    async with connect(f"ws://127.0.0.1:{driver_config.AGENT_PORT}") as ws:
         # Fetch the current task.
         await ws.send(json.dumps({"op": "fetch"}))
         records = json.loads(await ws.recv())['records']
@@ -29,11 +29,11 @@ async def start_working() -> None:
         print(f"unknown request mode {request_mode}")
         return
     # Construct the LLM communicator.
-    llm_module: ModuleType = importlib.import_module(f"driver.llm.{config.LLM_MODULE}")
+    llm_module: ModuleType = importlib.import_module(f"driver.llm.{driver_config.LLM_MODULE}")
     llm: LLM = llm_module.Device()
     # Fetch the LLM result using streaming.
     try:
-        async with connect(f"ws://127.0.0.1:{config.FRONTEND_PORT}/send") as control_ws:
+        async with connect(f"ws://127.0.0.1:{driver_config.FRONTEND_PORT}/send") as control_ws:
             async def __send(command: dict) -> None:
                 await control_ws.send(json.dumps(command))
 

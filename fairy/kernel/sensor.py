@@ -6,7 +6,7 @@ from types import ModuleType
 import websockets
 from websockets.asyncio.server import serve, ServerConnection
 from lib.hal import DeviceAbstract
-import config
+from config import driver as driver_config
 
 
 async def run_server() -> None:
@@ -17,10 +17,10 @@ async def run_server() -> None:
         # Create the device instance.
         return device_module.Device()
 
-    # Load the device from driver.
+    # Load the specific driver for the device.
     devices: dict[str, DeviceAbstract] = {}
-    if config.USE_CAMERA:
-        devices["camera"] = __load_device('camera', config.CAMERA_MODULE)
+    if driver_config.CAMERA_ENABLE:
+        devices["camera"] = __load_device('camera', driver_config.CAMERA_MODULE)
 
     async def __handler(websocket: ServerConnection) -> None:
         # Accept the connection.
@@ -31,14 +31,14 @@ async def run_server() -> None:
     # Launch the camera control server.
     while True:
         try:
-            async with serve(__handler, "127.0.0.1", config.CAMERA_PORT):
+            async with serve(__handler, "127.0.0.1", driver_config.CAMERA_PORT):
                 await asyncio.get_event_loop().create_future()
         except (ConnectionError, OSError, asyncio.CancelledError, websockets.exceptions.WebSocketException):
             pass
 
 
 def main() -> None:
-    # Create the communicate server.
+    # Create the camera communicating server.
     asyncio.run(run_server())
 
 
